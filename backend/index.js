@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const express = require("express");
 const mongoose = require("mongoose");
-const helmet = require("helmet");
+// const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
 
@@ -24,7 +24,7 @@ const accessLogStream = fs.createWriteStream(
   { flags: "a" }
 );
 
-app.use(helmet());
+// app.use(helmet());
 app.use(compression());
 app.use(morgan("combined", { stream: accessLogStream }));
 

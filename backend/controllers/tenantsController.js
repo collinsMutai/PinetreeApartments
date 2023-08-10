@@ -3,25 +3,21 @@ const path = require("path");
 
 const Tenant = require("../model/tenantsSchema");
 
+
 const PDFDocument = require("pdfkit");
 
-exports.getHome = (req, res, next) => {
-  res.render("home", {
-    path: "/",
-    pageTitle: "PineTree Apartments",
-  });
-};
+exports.getTenants = async (req, res, next) => {
 
-exports.getTenants = (req, res, next) => {
-  Tenant.find()
-    .then((tenants) => {
-      console.log(tenants);
-      res.render("tenants", {
-        path: "/tenants",
-        tenants: tenants,
-      });
-    })
-    .catch((err) => console.log(err));
+  const tenants = await Tenant.find().sort({apt: 'asc'});
+  try {
+    
+    res.render("tenants", {
+      path: "/tenants",
+      tenants: tenants,
+    });
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 exports.getInvoice = (req, res, next) => {

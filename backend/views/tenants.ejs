@@ -1,18 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Tenants</h1>
-    <% if(tenants.length > 0) { %>
-    <div>
-        <% for (let tenant of tenants) { %>
-        <p><%= tenant.name %> - <a href="/tenants/<%= tenant._id %>">Invoice</a></p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tenants</title>
+    <link rel="stylesheet" href="/css/tenants.css" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="nav">
+      <img src="/images/logo.png" alt="" />
+      <ul>
+        <% if (isAuthenticated) { %>
+        <li>
+          <form action="/logout" method="POST">
+            <button type="submit">Logout</button>
+          </form>
+        </li>
         <% } %>
+      </ul>
     </div>
-    <% } %>
-</body>
+    <div class="hello">
+      <p>Hello <%= landlord.name %> 👋</p>
+    </div>
+    <div class="container">
+      <h4>Tenants</h4>
+
+      <% if(tenants.length > 0) { %>
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Apt#</th>
+          <th>Get Invoice</th>
+        </tr>
+        <% for (let tenant of tenants) { %>
+        <tr>
+          <td><%= tenant.name %></td>
+          <td><%= tenant.apt %></td>
+          <td>
+            <a href="/tenants/<%= tenant._id %>">Invoice</a>
+          </td>
+        </tr>
+
+        <% } %>
+      </table>
+      <% } %>
+    </div>
+    <div class="footer"><p id="copyright">Collinsfrontend &copy;</p></div>
+  </body>
+  <script>
+    document
+      .getElementById("copyright")
+      .appendChild(document.createTextNode(new Date().getFullYear()));
+  </script>
 </html>

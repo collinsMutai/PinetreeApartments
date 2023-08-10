@@ -4,6 +4,11 @@ const dotenv = require("dotenv");
 dotenv.config();
 const express = require("express");
 const mongoose = require("mongoose");
+
+const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session);
+const Landlord = require("./model/landlordSchema");
+
 // const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
@@ -14,6 +19,10 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3000;
 
 const app = express();
+const store = new MongoDBStore({
+  uri: MONGODB_URI,
+  collection: "sessions",
+});
 app.set("view engine", "ejs");
 
 const tenantRoutes = require("./routes/tenantsRoutes");
@@ -28,8 +37,10 @@ const accessLogStream = fs.createWriteStream(
 app.use(compression());
 app.use(morgan("combined", { stream: accessLogStream }));
 
+app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/images", express.static(path.join(__dirname, "images")));
+app.use(express.static("public"));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -44,7 +55,40 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/landlord", landlordRoutes);
+app.use(
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+    store: store,
+  })
+);
+
+
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn
+  res.locals.landlord = req.session.landlord
+  next()
+})
+
+app.use(async (req, res, next) => {
+  if (!req.session.landlord) {
+    return next();
+  }
+  try {
+    const landlord = Landlord.findById(req.session.landlord._id);
+    if (!landlord) {
+      return next();
+    }
+    req.landlord = landlord;
+    
+    next();
+  } catch (err) {
+    next(new Error(err));
+  }
+});
+
+app.use(landlordRoutes);
 app.use(tenantRoutes);
 
 mongoose

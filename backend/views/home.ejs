@@ -1,12 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Pinetree Apartments</h1>
-   <a href="/landlord/login">Login</a>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Landlord Login</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="form">
+        <h4>Log In To Your Account</h4>
+        <form action="/" method="POST">
+          <input type="email" name="email" placeholder="Email" />
+          <input type="password" name="password" placeholder="Password" />
+          <button type="submit">Login</button>
+        </form>
+
+        <div class="suggests">
+          <div class="signup">
+            <a href="/signup">Signup</a>
+          </div>
+          <div class="forgot">
+            <span>Forgot Password?</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><p id="copyright">Collinsfrontend &copy;</p></div>
+  </body>
+  <script>
+    document
+      .getElementById("copyright")
+      .appendChild(document.createTextNode(new Date().getFullYear()));
+  </script>
 </html>

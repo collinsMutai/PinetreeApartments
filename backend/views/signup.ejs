@@ -9,10 +9,15 @@
   <body>
     <div class="form">
       <h4>Signup</h4>
+      <% if(errorMessage) { %>
+      <div class="error">
+        <%= errorMessage %>
+      </div>
+      <% } %>
       <form action="/signup" method="POST">
-        <input type="text" name="name" placeholder="Name" />
-        <input type="email" name="email" placeholder="Email" />
-        <input type="password" name="password" placeholder="Password" />
+        <input type="text" name="name" placeholder="Name" value="<%= oldInput.name %>" class="<%= validationErrors.find(e=> e.path === 'name') ? 'invalid': '' %>"/>
+        <input type="email" name="email" placeholder="Email"  value="<%= oldInput.email %>" class="<%= validationErrors.find(e=> e.path === 'email') ? 'invalid': '' %>"/>
+        <input type="password" name="password" placeholder="Password" value="<%= oldInput.password %>" class="<%= validationErrors.find(e=> e.path === 'password') ? 'invalid': '' %>"/>
         <button type="submit">Signup</button>
       </form>
 

@@ -26,15 +26,45 @@
     <div class="hello">
       <p>Hello <%= landlord.name %> 👋</p>
     </div>
-    <div class="container">
-      <h4>Tenants</h4>
 
+    <div class="container">
+      <h4>Add New Tenants</h4>
+      <% if(errorMessage) { %>
+      <div class="error"><%= errorMessage %></div>
+      <% } %>
+      <div>
+        <form
+          action="<% if (editing) { %>/tenants/edit/<%= tenant._id %><% } else { %>/tenants<% } %>"
+          method="POST"
+          class="add"
+        >
+          <input
+            type="text"
+            name="name"
+            placeholder="Name"
+            value="<% if (editing) { %><%= tenant.name %><% } %>"
+          />
+          <input
+            type="text"
+            name="apt"
+            placeholder="Apt#"
+            value="<% if (editing) { %><%= tenant.apt %><% } %>"
+          />
+
+          <button type="submit">
+            <% if (editing) { %>Edit Tenant<% } else { %>Add Tenant<% } %>
+          </button>
+        </form>
+      </div>
+      <h4>Tenants</h4>
       <% if(tenants.length > 0) { %>
       <table>
         <tr>
           <th>Name</th>
           <th>Apt#</th>
           <th>Get Invoice</th>
+          <th>Delete</th>
+          <th>Edit</th>
         </tr>
         <% for (let tenant of tenants) { %>
         <tr>
@@ -42,6 +72,16 @@
           <td><%= tenant.apt %></td>
           <td>
             <a href="/tenants/<%= tenant._id %>">Invoice</a>
+          </td>
+          <td>
+            <form action="/tenants/<%= tenant._id %>" method="POST">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+          <td>
+            <form action="/tenants/edit/<%= tenant._id %>">
+              <button type="submit">Edit</button>
+            </form>
           </td>
         </tr>
 

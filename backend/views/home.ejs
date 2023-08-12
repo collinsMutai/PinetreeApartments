@@ -10,9 +10,14 @@
     <div class="container">
       <div class="form">
         <h4>Log In To Your Account</h4>
+        <% if(errorMessage) { %>
+        <div class="error">
+          <%= errorMessage %>
+        </div>
+        <% } %>
         <form action="/" method="POST">
-          <input type="email" name="email" placeholder="Email" />
-          <input type="password" name="password" placeholder="Password" />
+          <input type="email" name="email" placeholder="Email" value="<%= oldInput.email %>" class="<%= validationErrors.find(e=> e.path === 'email') ? 'invalid' : '' %>"/>
+          <input type="password" name="password" placeholder="Password" value="<%= oldInput.password %>" class="<%= validationErrors.find(e=> e.path === 'password') ? 'invalid' : '' %>"/>
           <button type="submit">Login</button>
         </form>
 

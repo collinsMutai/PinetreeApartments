@@ -28,6 +28,8 @@ app.set("view engine", "ejs");
 const tenantRoutes = require("./routes/tenantsRoutes");
 const landlordRoutes = require("./routes/landlordRoutes");
 
+const errorController = require("./controllers/error");
+
 const accessLogStream = fs.createWriteStream(
   path.join(__dirname, "access.log"),
   { flags: "a" }
@@ -37,7 +39,7 @@ const accessLogStream = fs.createWriteStream(
 app.use(compression());
 app.use(morgan("combined", { stream: accessLogStream }));
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use(express.static("public"));
@@ -57,39 +59,47 @@ app.use((req, res, next) => {
 
 app.use(
   session({
-    secret: "secret",
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
     store: store,
   })
 );
 
-
 app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.isLoggedIn
-  res.locals.landlord = req.session.landlord
-  next()
-})
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.landlord = req.session.landlord;
+  
+  next();
+});
 
 app.use(async (req, res, next) => {
   if (!req.session.landlord) {
     return next();
   }
   try {
-    const landlord = Landlord.findById(req.session.landlord._id);
+    const landlord = await Landlord.findById(req.session.landlord._id);
     if (!landlord) {
       return next();
     }
     req.landlord = landlord;
-    
     next();
   } catch (err) {
     next(new Error(err));
   }
 });
 
-app.use(landlordRoutes);
 app.use(tenantRoutes);
+app.use(landlordRoutes);
+
+// app.use("/500", errorController.get500);
+
+app.use((error, req, res, next) => {
+  res.render("500", {
+    path: "/",
+    pageTitle: "Server Error",
+  });
+});
 
 mongoose
   .connect(MONGODB_URI)

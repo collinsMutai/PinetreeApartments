@@ -3,17 +3,38 @@ const path = require("path");
 
 const Tenant = require("../model/tenantsSchema");
 
+const { validationResult } = require("express-validator");
 
 const PDFDocument = require("pdfkit");
 
-exports.getTenants = async (req, res, next) => {
+exports.createTenant = async (req, res, next) => {
+  const name = req.body.name;
+  const apt = req.body.apt;
 
-  const tenants = await Tenant.find().sort({apt: 'asc'});
   try {
-    
+    const tenant = new Tenant({
+      name: name,
+      apt: apt,
+    });
+    tenant.save();
+    res.redirect("/tenants");
+  } catch (err) {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+};
+
+exports.getTenants = async (req, res, next) => {
+  const tenants = await Tenant.find().sort({ apt: "asc" });
+  try {
     res.render("tenants", {
       path: "/tenants",
       tenants: tenants,
+      tenant: "",
+      errorMessage: "",
+      validationErrors: [],
+      editing: false,
     });
   } catch (err) {
     console.log(err);
@@ -88,4 +109,69 @@ exports.getInvoice = (req, res, next) => {
 
       pdfDoc.end();
     });
+};
+
+exports.deleteTenant = async (req, res, next) => {
+  const tenantId = req.params.tenantId;
+  try {
+    const tenant = await Tenant.findById(tenantId);
+
+    if (!tenant) {
+      return next(new Error("Tenant not found."));
+    }
+    await Tenant.deleteOne({ _id: tenantId });
+    res.redirect("/tenants");
+  } catch (err) {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+};
+
+exports.getEditTenant = async (req, res, next) => {
+  // const editMode = req.query.editMode;
+  // if (!editMode) {
+  //   return res.redirect("/tenants");
+  // }
+  const tenantId = req.params.tenantId;
+  console.log(tenantId);
+  try {
+    const tenant = await Tenant.findById(tenantId);
+    const tenants = await Tenant.find().sort({ apt: "asc" });
+    // if (!tenant) {
+    //   return res.redirect("/tenants");
+    // }
+
+    return res.render("tenants", {
+      path: "/tenants",
+      editing: true,
+      tenant: tenant,
+      tenants: tenants,
+      errorMessage: "",
+      validationErrors: [],
+    });
+  } catch (err) {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+};
+
+exports.postEditTenant = async (req, res, next) => {
+  const name = req.body.name;
+  const apt = req.body.apt;
+  const tenantId = req.params.tenantId;
+  console.log(tenantId);
+  try {
+    const tenant = await Tenant.findById(tenantId);
+    console.log(tenant);
+    tenant.name = name;
+    tenant.apt = apt;
+    await tenant.save();
+    res.redirect('/tenants')
+  } catch (err) {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
 };

@@ -102,3 +102,9 @@ form button {
   font-size: 16px;
   font-family: lato;
 }
+.error{
+  color: red;
+ }
+.form form input.invalid {
+border: 1px solid red
+}

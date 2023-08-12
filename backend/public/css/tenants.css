@@ -97,6 +97,13 @@ a {
   border-radius: 5px;
 }
 @media only screen and (max-width: 600px) {
+  .add{
+    display: flex;
+    flex-direction: column;
+  }
+  .add input,button{
+    margin-bottom: 5px;
+  }
   .container {
     max-width: 550px;
     padding: 30px;
@@ -124,3 +131,6 @@ a {
   font-size: 16px;
   font-family: lato;
 }
+.error{
+  color: red;
+ }

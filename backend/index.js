@@ -13,6 +13,8 @@ const Landlord = require("./model/landlordSchema");
 const compression = require("compression");
 const morgan = require("morgan");
 
+const flash = require('connect-flash')
+
 const bodyParser = require("body-parser");
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -66,9 +68,12 @@ app.use(
   })
 );
 
+app.use(flash())
+
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
   res.locals.landlord = req.session.landlord;
+  res.locals.data = req.session.data;
   
   next();
 });

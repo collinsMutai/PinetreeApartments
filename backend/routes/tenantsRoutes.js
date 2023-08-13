@@ -3,10 +3,12 @@ const { check, body } = require("express-validator");
 const Tenant = require("../model/tenantsSchema");
 const router = express.Router();
 
+const isAuth = require("../middleware/is-auth")
+
 const tenantsController = require("../controllers/tenantsController");
 
 router.post(
-  "/tenants",
+  "/tenants", isAuth,
   [
     check("apt").custom((value, { req }) => {
       return Tenant.findOne({ apt: value, landlordId: req.landlord._id }).then((userDoc) => {
@@ -21,16 +23,17 @@ router.post(
   tenantsController.createTenant
 );
 
-router.get("/tenants", tenantsController.getTenants);
+router.get("/tenants", isAuth, tenantsController.getTenants);
 
-router.get("/tenants/:tenantId", tenantsController.getInvoice);
+router.get("/tenants/:tenantId", isAuth, tenantsController.getInvoice);
 
-router.post("/tenants/:tenantId", tenantsController.deleteTenant);
+router.post("/tenants/:tenantId", isAuth, tenantsController.deleteTenant);
 
-router.get("/tenants/edit/:tenantId", tenantsController.getEditTenant);
+router.get("/tenants/edit/:tenantId", isAuth, tenantsController.getEditTenant);
 
 router.post(
   "/tenants/edit/:tenantId",
+  isAuth,
   [
     check("apt").custom((value, { req }) => {
       return Tenant.findOne({ apt: value, landlordId: req.landlord._id }).then(

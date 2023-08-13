@@ -29,7 +29,7 @@
 
     <div class="container">
       <h4>Add New Tenants</h4>
-      <% if(errorMessage) { %>
+      <% if(errorMessage ) { %>
       <div class="error"><%= errorMessage %></div>
       <% } %>
       <div>
@@ -57,7 +57,7 @@
         </form>
       </div>
       <% if(tenants.length > 0) { %>
-        <h4>Tenants</h4>
+      <h4>Tenants</h4>
       <table>
         <tr>
           <th>Name</th>

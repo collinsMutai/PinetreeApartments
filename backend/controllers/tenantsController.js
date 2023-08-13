@@ -14,6 +14,8 @@ exports.createTenant = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
+    
+    req.flash("error", "Apt# already assigned, please add another one.");
     return res.redirect("/tenants");
   }
 
@@ -41,7 +43,7 @@ exports.getTenants = async (req, res, next) => {
       path: "/tenants",
       tenants: tenants,
       tenant: "",
-      errorMessage: "",
+      errorMessage: req.flash('error'),
       validationErrors: [],
       editing: false,
     });
@@ -160,7 +162,8 @@ exports.getEditTenant = async (req, res, next) => {
 
       tenant: tenant,
       tenants: tenants,
-      errorMessage: "",
+      
+      errorMessage: req.flash("error"),
       validationErrors: [],
     });
   } catch (err) {
@@ -176,9 +179,12 @@ exports.postEditTenant = async (req, res, next) => {
   const tenantId = req.params.tenantId;
 
   const errors = validationResult(req);
+  
   if (!errors.isEmpty()) {
+    req.flash("error", "Apt# already assigned, please add another one.");
     return res.redirect("/tenants");
   }
+
   try {
     const tenant = await Tenant.findById(tenantId);
     tenant.name = name;

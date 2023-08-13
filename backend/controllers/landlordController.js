@@ -104,13 +104,6 @@ exports.postLogin = async (req, res, next) => {
       req.session.landlord = landlord;
       return req.session.save((err) => {
         res.redirect("/tenants");
-        // res.render("tenants", {
-        //   path: "/tenants",
-        //   editing: false,
-        //   tenant: "",
-        //   errorMessage: "",
-        //   validationErrors: [],
-        // });
       });
     }
 
@@ -132,7 +125,6 @@ exports.postLogin = async (req, res, next) => {
 
 exports.postLogout = async (req, res, next) => {
   await req.session.destroy((err) => {
-    console.log(err);
     res.redirect("/");
   });
 };

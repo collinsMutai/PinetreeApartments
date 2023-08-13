@@ -11,10 +11,26 @@ exports.createTenant = async (req, res, next) => {
   const name = req.body.name;
   const apt = req.body.apt;
 
+  const errors = validationResult(req);
+
   try {
+    if (!errors.isEmpty()) {
+      return res.render("tenants", {
+        path: "/tenants",
+        tenants: await Tenant.find({ landlordId: req.landlord._id }).sort({
+          apt: "asc",
+        }),
+        tenant: "",
+        errorMessage: errors.array()[0].msg,
+        validationErrors: errors.array(),
+        editing: false,
+      });
+    }
+
     const tenant = new Tenant({
       name: name,
       apt: apt,
+      landlordId: req.landlord,
     });
     tenant.save();
     res.redirect("/tenants");
@@ -26,7 +42,9 @@ exports.createTenant = async (req, res, next) => {
 };
 
 exports.getTenants = async (req, res, next) => {
-  const tenants = await Tenant.find().sort({ apt: "asc" });
+  const tenants = await Tenant.find({ landlordId: req.landlord._id }).sort({
+    apt: "asc",
+  });
   try {
     res.render("tenants", {
       path: "/tenants",
@@ -37,78 +55,83 @@ exports.getTenants = async (req, res, next) => {
       editing: false,
     });
   } catch (err) {
-    console.log(err);
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
-exports.getInvoice = (req, res, next) => {
+exports.getInvoice = async (req, res, next) => {
   const tenantId = req.params.tenantId;
+  try {
+    const user = await Tenant.findById({ _id: tenantId });
 
-  Tenant.findById({ _id: tenantId })
-    .then((user) => {
-      return { apt: user.apt, tenant: user.name };
-    })
-    .then((result) => {
-      const d = new Date();
-      let year = d.getFullYear().toString();
-      let month = d.getMonth() + 1;
-      let day = d.getDate().toString();
-      let paidDate = day + month.toString() + year;
+    const result = { apt: user.apt, tenant: user.name };
 
-      const invoiceName = "invoice-" + paidDate + result.tenant + ".pdf";
-      const invoicePath = path.join("data", "invoices", invoiceName);
+    const d = new Date();
+    let year = d.getFullYear().toString();
+    let month = d.getMonth() + 1;
+    let day = d.getDate().toString();
+    let paidDate = day + month.toString() + year;
 
-      const pdfDoc = new PDFDocument({ size: "A6" });
+    const invoiceName = "invoice-" + paidDate + result.tenant + ".pdf";
+    const invoicePath = path.join("data", "invoices", invoiceName);
 
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader(
-        "Content-Disposition",
-        'attachment; filename="' + invoiceName + '"'
-      );
-      pdfDoc.pipe(fs.createWriteStream(invoicePath));
-      pdfDoc.pipe(res);
+    const pdfDoc = new PDFDocument({ size: "A6" });
 
-      pdfDoc
-        .image("images/logo.png", {
-          fit: [150, 150],
-          align: "center",
-          valign: "top",
-        })
-        .moveDown(1.5);
-      const date = new Date();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="' + invoiceName + '"'
+    );
+    pdfDoc.pipe(fs.createWriteStream(invoicePath));
+    pdfDoc.pipe(res);
 
-      const formatedDate = date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
-      pdfDoc
-        .fontSize(16)
-        .text("Invoice", {
-          underline: true,
-        })
-        .moveDown(2);
+    pdfDoc
+      .image("images/logo.png", {
+        fit: [150, 150],
+        align: "center",
+        valign: "top",
+      })
+      .moveDown(1.5);
+    const date = new Date();
 
-      pdfDoc
-        .fontSize(14)
-        .text(`Apt#${result.apt} - Date ${formatedDate}`)
-        .moveDown(0.5);
-
-      pdfDoc.fontSize(13).text("Rent Paid - 5000").moveDown(0.5);
-
-      pdfDoc.text("---------------").moveDown(2);
-
-      pdfDoc.fontSize(12).text("Thank you for your business.").moveDown(0.5);
-
-      pdfDoc
-        .fontSize(11)
-        .text("Contact info - 0797759858", {
-          underline: true,
-        })
-        .moveDown(0.5);
-
-      pdfDoc.end();
+    const formatedDate = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     });
+    pdfDoc
+      .fontSize(16)
+      .text("Invoice", {
+        underline: true,
+      })
+      .moveDown(2);
+
+    pdfDoc
+      .fontSize(14)
+      .text(`Apt#${result.apt} - Date ${formatedDate}`)
+      .moveDown(0.5);
+
+    pdfDoc.fontSize(13).text("Rent Paid - 5000").moveDown(0.5);
+
+    pdfDoc.text("---------------").moveDown(2);
+
+    pdfDoc.fontSize(12).text("Thank you for your business.").moveDown(0.5);
+
+    pdfDoc
+      .fontSize(11)
+      .text("Contact info - 0797759858", {
+        underline: true,
+      })
+      .moveDown(0.5);
+
+    pdfDoc.end();
+  } catch (err) {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
 };
 
 exports.deleteTenant = async (req, res, next) => {
@@ -119,7 +142,7 @@ exports.deleteTenant = async (req, res, next) => {
     if (!tenant) {
       return next(new Error("Tenant not found."));
     }
-    await Tenant.deleteOne({ _id: tenantId });
+    await Tenant.deleteOne({ _id: tenantId, landlordId: req.landlord._id });
     res.redirect("/tenants");
   } catch (err) {
     const error = new Error(err);
@@ -129,18 +152,14 @@ exports.deleteTenant = async (req, res, next) => {
 };
 
 exports.getEditTenant = async (req, res, next) => {
-  // const editMode = req.query.editMode;
-  // if (!editMode) {
-  //   return res.redirect("/tenants");
-  // }
   const tenantId = req.params.tenantId;
-  console.log(tenantId);
+
   try {
     const tenant = await Tenant.findById(tenantId);
     const tenants = await Tenant.find().sort({ apt: "asc" });
-    // if (!tenant) {
-    //   return res.redirect("/tenants");
-    // }
+    if (!tenant) {
+      return res.redirect("/tenants");
+    }
 
     return res.render("tenants", {
       path: "/tenants",
@@ -160,15 +179,16 @@ exports.getEditTenant = async (req, res, next) => {
 exports.postEditTenant = async (req, res, next) => {
   const name = req.body.name;
   const apt = req.body.apt;
-  const tenantId = req.params.tenantId;
-  console.log(tenantId);
+
   try {
     const tenant = await Tenant.findById(tenantId);
-    console.log(tenant);
+    if (tenant.landlordId.toString() !== req.landlord._id.toString()) {
+      return res.redirect("/tenants");
+    }
     tenant.name = name;
     tenant.apt = apt;
     await tenant.save();
-    res.redirect('/tenants')
+    res.redirect("/tenants");
   } catch (err) {
     const error = new Error(err);
     error.httpStatusCode = 500;

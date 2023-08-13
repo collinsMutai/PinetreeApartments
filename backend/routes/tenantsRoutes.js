@@ -4,20 +4,20 @@ const Tenant = require("../model/tenantsSchema");
 const router = express.Router();
 
 const tenantsController = require("../controllers/tenantsController");
-// [
-//   check("apt").custom((value, { req }) => {
-//     return Tenant.findOne({ apt: value }).then((userDoc) => {
-//       if (userDoc) {
-//         return Promise.reject(
-//           "Apt# already assigned, please add another one."
-//         );
-//       }
-//     });
-//   }),
-// ],
+
 router.post(
   "/tenants",
-
+  [
+    check("apt").custom((value, { req }) => {
+      return Tenant.findOne({ apt: value, landlordId: req.landlord._id }).then((userDoc) => {
+        if (userDoc) {
+          return Promise.reject(
+            "Apt# already assigned, please add another one."
+          );
+        }
+      });
+    }),
+  ],
   tenantsController.createTenant
 );
 

@@ -13,20 +13,40 @@ exports.createTenant = async (req, res, next) => {
 
   const errors = validationResult(req);
 
+  // if (!errors.isEmpty()) {
+  // const tenants = await Tenant.find({ landlordId: req.landlord._id }).sort({
+  //   apt: "asc",
+  // });
+  // return res.redirect("/tenants");
+  // res.render("tenants", {
+  //   path: "/tenants",
+  //   tenants: tenants,
+  //   tenant: "",
+  //   errorMessage: errors.array()[0].msg,
+  //   validationErrors: errors.array(),
+  //   editing: false,
+  // });
+  // }
   try {
+    //  const tenantt = await Tenant.findById(tenantId);
+    const tenants = await Tenant.find({ landlordId: req.landlord._id }).sort({
+      apt: "asc",
+    });
     if (!errors.isEmpty()) {
       return res.render("tenants", {
         path: "/tenants",
-        tenants: await Tenant.find({ landlordId: req.landlord._id }).sort({
-          apt: "asc",
-        }),
+        tenants: tenants,
         tenant: "",
+        oldInput: {
+          name: name,
+          apt: apt,
+        },
+
         errorMessage: errors.array()[0].msg,
         validationErrors: errors.array(),
         editing: false,
       });
     }
-
     const tenant = new Tenant({
       name: name,
       apt: apt,
@@ -53,6 +73,7 @@ exports.getTenants = async (req, res, next) => {
       errorMessage: "",
       validationErrors: [],
       editing: false,
+      oldInput: ''
     });
   } catch (err) {
     const error = new Error(err);
@@ -153,7 +174,7 @@ exports.deleteTenant = async (req, res, next) => {
 
 exports.getEditTenant = async (req, res, next) => {
   const tenantId = req.params.tenantId;
-
+  console.log(tenantId);
   try {
     const tenant = await Tenant.findById(tenantId);
     const tenants = await Tenant.find().sort({ apt: "asc" });
@@ -164,6 +185,7 @@ exports.getEditTenant = async (req, res, next) => {
     return res.render("tenants", {
       path: "/tenants",
       editing: true,
+      oldInput: '',
       tenant: tenant,
       tenants: tenants,
       errorMessage: "",
@@ -179,14 +201,30 @@ exports.getEditTenant = async (req, res, next) => {
 exports.postEditTenant = async (req, res, next) => {
   const name = req.body.name;
   const apt = req.body.apt;
+  const tenantId = req.params.tenantId;
+  console.log(tenantId);
 
+  const errors = validationResult(req);
   try {
     const tenant = await Tenant.findById(tenantId);
-    if (tenant.landlordId.toString() !== req.landlord._id.toString()) {
-      return res.redirect("/tenants");
+    const tenants = await Tenant.find({ landlordId: req.landlord._id }).sort({
+      apt: "asc",
+    });
+    if (!errors.isEmpty()) {
+      return res.render("tenants", {
+        path: "/tenants",
+        tenants: tenants,
+        tenant: tenant,
+        errorMessage: errors.array()[0].msg,
+        validationErrors: errors.array(),
+        editing: true,
+        oldInput: "",
+      });
     }
+
     tenant.name = name;
     tenant.apt = apt;
+    console.log(tenant);
     await tenant.save();
     res.redirect("/tenants");
   } catch (err) {

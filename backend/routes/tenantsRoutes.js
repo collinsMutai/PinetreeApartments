@@ -29,6 +29,22 @@ router.post("/tenants/:tenantId", tenantsController.deleteTenant);
 
 router.get("/tenants/edit/:tenantId", tenantsController.getEditTenant);
 
-router.post("/tenants/edit/:tenantId", tenantsController.postEditTenant);
+router.post(
+  "/tenants/edit/:tenantId",
+  [
+    check("apt").custom((value, { req }) => {
+      return Tenant.findOne({ apt: value, landlordId: req.landlord._id }).then(
+        (userDoc) => {
+          if (userDoc) {
+            return Promise.reject(
+              "Apt# already assigned, please add another one."
+            );
+          }
+        }
+      );
+    }),
+  ],
+  tenantsController.postEditTenant
+);
 
 module.exports = router;

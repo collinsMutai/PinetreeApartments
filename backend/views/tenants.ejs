@@ -42,13 +42,13 @@
             type="text"
             name="name"
             placeholder="Name"
-            value="<% if (editing) { %><%= tenant.name %><% } else { %> <%=oldInput.name%><% } %>"
+            value="<% if (editing ) { %><%= tenant.name %><% } %>"
           />
           <input
             type="text"
             name="apt"
             placeholder="Apt#"
-            value="<% if (editing) { %><%= tenant.apt %><% }else { %> <%=oldInput.apt%><% } %>"
+            value="<% if (editing) { %><%= tenant.apt %><% } %>"
           />
 
           <button type="submit">
@@ -57,7 +57,7 @@
         </form>
       </div>
       <% if(tenants.length > 0) { %>
-      <h4>Tenants</h4>
+        <h4>Tenants</h4>
       <table>
         <tr>
           <th>Name</th>

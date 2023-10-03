@@ -75,9 +75,9 @@ exports.getInvoice = async (req, res, next) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      'attachment; filename="' + invoiceName + '"'
+      'download; filename="' + invoiceName + '"'
     );
-    pdfDoc.pipe(fs.createWriteStream(invoicePath));
+    // pdfDoc.pipe(fs.createWriteStream(invoicePath));
     pdfDoc.pipe(res);
 
     pdfDoc

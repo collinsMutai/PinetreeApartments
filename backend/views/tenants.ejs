@@ -62,7 +62,7 @@
         <tr>
           <th>Name</th>
           <th>Apt#</th>
-          <th>Get Invoice</th>
+          <th>Rent</th>
           <th>Delete</th>
           <th>Edit</th>
         </tr>
@@ -71,7 +71,7 @@
           <td><%= tenant.name %></td>
           <td><%= tenant.apt %></td>
           <td>
-            <a href="/tenants/<%= tenant._id %>">Invoice</a>
+            <a href="/tenants/<%= tenant._id %>">Get Invoice</a>
           </td>
           <td>
             <form action="/tenants/<%= tenant._id %>" method="POST">
@@ -88,6 +88,17 @@
         <% } %>
       </table>
       <% } %>
+      <div style="margin-top: 20px">
+        <h4>Water payment</h4>
+        <% if(errorMessage) { %>
+        <div class="error"><%= errorMessage %></div>
+        <% } %>
+        <form action="/tenants/water" method="POST">
+          <input type="number" placeholder="Apt#" name="apt" class="<%= validationErrors.find(e=> e.path === 'apt') ? 'invalid' : '' %>"/>
+          <input type="number" placeholder="Amount" name="amount" class="<%= validationErrors.find(e=> e.path === 'amount') ? 'invalid' : '' %>"/>
+          <button type="submit">Get Invoice</button>
+        </form>
+      </div>
     </div>
     <div class="footer"><p id="copyright">Collinsfrontend &copy;</p></div>
   </body>

@@ -90,8 +90,8 @@
       <% } %>
       <div style="margin-top: 20px">
         <h4>Water payment</h4>
-        <% if(errorMessage) { %>
-        <div class="error"><%= errorMessage %></div>
+        <% if(errorMessage2) { %>
+        <div class="error"><%= errorMessage2 %></div>
         <% } %>
         <form action="/tenants/water" method="POST">
           <input type="number" placeholder="Apt#" name="apt" class="<%= validationErrors.find(e=> e.path === 'apt') ? 'invalid' : '' %>"/>

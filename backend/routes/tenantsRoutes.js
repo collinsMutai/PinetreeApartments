@@ -30,15 +30,25 @@ router.get("/tenants", isAuth, tenantsController.getTenants);
 
 router.get("/tenants/:tenantId", isAuth, tenantsController.getInvoice);
 
-// router.post(
-//   "/tenants/water",
-//   [
-//     body("apt", "Apt# is required").not().isEmpty(),
-//     body("amount", "Amount is required").not().isEmpty(),
-//   ],
-//   tenantsController.getWaterInvoice
-// );
-router.post("/tenants/water", tenantsController.getWaterInvoice);
+router.post(
+  "/tenants/water",
+  [
+    body("apt", "Apt# is required")
+      .notEmpty()
+      .custom((value, { req }) => {
+        return Tenant.findOne({ apt: value }).then((userDoc) => {
+          if (!userDoc) {
+            return Promise.reject(
+              "Tenant does not exist."
+            );
+          }
+        });
+      }),
+    body("amount", "Amount is required").notEmpty(),
+  ],
+  tenantsController.getWaterInvoice
+);
+
 
 router.post("/tenants/:tenantId", isAuth, tenantsController.deleteTenant);
 

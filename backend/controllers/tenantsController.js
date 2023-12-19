@@ -37,13 +37,15 @@ exports.getTenants = async (req, res, next) => {
   const tenants = await Tenant.find({ landlordId: req.landlord._id }).sort({
     apt: "asc",
   });
+  const errors = validationResult(req);
   try {
     res.render("tenants", {
       path: "/tenants",
       tenants: tenants,
       tenant: "",
       errorMessage: req.flash("error"),
-      validationErrors: [],
+      errorMessage2: req.flash("error2"),
+      validationErrors: errors.array(),
       editing: false,
     });
   } catch (err) {
@@ -137,11 +139,8 @@ exports.getWaterInvoice = async (req, res, next) => {
   console.log(errors);
 
   if (!errors.isEmpty()) {
-    return res.status(422).render("tenants", {
-      path: "/tenants",
-      errorMessage: errors.array()[0].msg,
-      validationErrors: errors.array(),
-    });
+    req.flash("error2", errors.array()[0].msg);
+    return res.redirect("/tenants");
   }
 
   try {
@@ -195,7 +194,10 @@ exports.getWaterInvoice = async (req, res, next) => {
       .text(`Apt#${result.apt} - Date ${formatedDate}`)
       .moveDown(0.5);
 
-    pdfDoc.fontSize(13).text(`Water payment amount Kshs ${amount}`).moveDown(0.5);
+    pdfDoc
+      .fontSize(13)
+      .text(`Water payment amount Kshs ${amount}`)
+      .moveDown(0.5);
 
     pdfDoc.text("---------------").moveDown(2);
 

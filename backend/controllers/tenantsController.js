@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const Tenant = require("../model/tenantsSchema");
+const Landlord = require("../model/landlordSchema");
 
 const { validationResult } = require("express-validator");
 
@@ -132,11 +133,7 @@ exports.getWaterInvoice = async (req, res, next) => {
   const apt = req.body.apt;
   const amount = req.body.amount;
 
-  console.log(apt, amount);
-
   const errors = validationResult(req);
-
-  console.log(errors);
 
   if (!errors.isEmpty()) {
     req.flash("error2", errors.array()[0].msg);
@@ -144,8 +141,12 @@ exports.getWaterInvoice = async (req, res, next) => {
   }
 
   try {
-    const user = await Tenant.findOne({ apt: apt });
-    console.log(user);
+    const user = await Tenant.findOne({
+      apt: apt,
+      landlordId: req.landlord._id,
+    });
+  
+
 
     const result = { apt: user.apt, tenant: user.name };
 

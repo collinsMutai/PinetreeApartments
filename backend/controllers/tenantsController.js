@@ -145,8 +145,6 @@ exports.getWaterInvoice = async (req, res, next) => {
       apt: apt,
       landlordId: req.landlord._id,
     });
-  
-
 
     const result = { apt: user.apt, tenant: user.name };
 
@@ -241,6 +239,8 @@ exports.getEditTenant = async (req, res, next) => {
 
   try {
     const tenant = await Tenant.findById(tenantId);
+    console.log(tenant);
+
     const tenants = await Tenant.find({ landlordId: req.landlord._id }).sort({
       apt: "asc",
     });
@@ -256,6 +256,7 @@ exports.getEditTenant = async (req, res, next) => {
       tenants: tenants,
 
       errorMessage: req.flash("error"),
+      errorMessage2: req.flash("error"),
       validationErrors: [],
     });
   } catch (err) {

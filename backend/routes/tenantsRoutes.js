@@ -38,9 +38,7 @@ router.post(
       .custom((value, { req }) => {
         return Tenant.findOne({ apt: value }).then((userDoc) => {
           if (!userDoc) {
-            return Promise.reject(
-              "Tenant does not exist."
-            );
+            return Promise.reject("Tenant does not exist.");
           }
         });
       }),
@@ -48,7 +46,6 @@ router.post(
   ],
   tenantsController.getWaterInvoice
 );
-
 
 router.post("/tenants/:tenantId", isAuth, tenantsController.deleteTenant);
 
@@ -58,10 +55,11 @@ router.post(
   "/tenants/edit/:tenantId",
   isAuth,
   [
+    check("name").notEmpty().withMessage("Tenant name is required"),
     check("apt").custom((value, { req }) => {
       return Tenant.findOne({ apt: value, landlordId: req.landlord._id }).then(
         (userDoc) => {
-          if (userDoc) {
+          if (userDoc && userDoc._id.toString() !== req.params.tenantId) {
             return Promise.reject(
               "Apt# already assigned, please add another one."
             );
